@@ -209,6 +209,9 @@ func ChangeNode(w http.ResponseWriter, r *http.Request) {
 func CreateNode(w http.ResponseWriter, r *http.Request) {
 	templateVM := r.URL.Query().Get("template")
 	newVM := r.URL.Query().Get("newvm")
+	masterName := r.URL.Query().Get("master")
+	masterPass := r.URL.Query().Get("mpass")
+	workerPass := r.URL.Query().Get("wpass")
 	curi := "qemu:///system"
 
 	virtClone, err := exec.Command("bash", "-c", "which virt-clone").Output()
@@ -255,6 +258,10 @@ func CreateNode(w http.ResponseWriter, r *http.Request) {
 	}
 	successJson := jsonErr{200, "success", "node clone success"}
 	json.NewEncoder(w).Encode(successJson)
+
+	go func() {
+		NodeJoin(masterName, newVM, masterPass, workerPass)
+	}()
 }
 
 func DeleteNode(w http.ResponseWriter, r *http.Request) {
